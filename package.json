@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "certificate-hub-backend",
+  "version": "1.0.0",
+  "description": "Certificate Hub backend with OTP authentication",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "dev:debug": "nodemon --inspect index.js",
+    "test:sms": "node test-sms.js",
+    "test:email": "node -e \"import('./routes/email.js').then(m => console.log('Email routes loaded successfully'))\"",
+    "lint": "echo 'Add ESLint configuration for code linting'",
+    "format": "echo 'Add Prettier configuration for code formatting'",
+    "logs": "tail -f logs/*.log",
+    "clean:logs": "rm -rf logs/*.log",
+    "health": "curl http://localhost:3001/health || echo 'Server not running'",
+    "env:check": "node -e \"console.log('Environment check:'); console.log('NODE_ENV:', process.env.NODE_ENV); console.log('PORT:', process.env.PORT); console.log('Email configured:', !!process.env.EMAIL_USER);\""
+  },
+  "dependencies": {
+    "@azure/msal-node": "^3.6.3",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@supabase/supabase-js": "^2.49.10",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.5",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "certificate",
+    "management",
+    "otp",
+    "authentication",
+    "education",
+    "students"
+  ],
+  "author": "GPS Team",
+  "license": "ISC"
+}
