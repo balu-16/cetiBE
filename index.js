@@ -8,11 +8,27 @@ import testRoutes from './routes/test.js';
 import supabase from './supabaseClient.js';
 import { WorkingOtpService } from './test-otp.js';
 import CertificateGenerator from './services/certificateGenerator.js';
+import { verifyTransporter } from './services/emailService.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Initialize email service on startup
+(async () => {
+  try {
+    console.log('🔧 Initializing email service...');
+    const emailReady = await verifyTransporter();
+    if (emailReady) {
+      console.log('✅ Email service initialized successfully');
+    } else {
+      console.warn('⚠️ Email service initialization failed - emails may not work');
+    }
+  } catch (error) {
+    console.error('❌ Email service initialization error:', error.message);
+  }
+})();
 
 // Middleware
 app.use(cors());

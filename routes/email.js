@@ -1,5 +1,5 @@
 import express from 'express';
-import { sendCertificateApprovalEmail, sendCertificateRejectionEmail } from '../services/emailService.js';
+import { sendCertificateApprovalEmail, sendCertificateRejectionEmail, sendTestEmail } from '../services/emailService.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { validateRequired, validateEmailField, sanitizeInput } from '../middleware/validation.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
@@ -12,64 +12,155 @@ router.use(sanitizeInput);
 
 // Test endpoint for email functionality
 router.post('/test', 
+  validateRequired(['email']),
   validateEmailField('email'),
   asyncHandler(async (req, res) => {
     const { email } = req.body;
-    
+
     logger.info('Sending test email', { email });
 
-    await sendCertificateApprovalEmail(
-      email,
-      'Test Student',
-      'TEST123',
-      'Test Course',
-      'Test Company'
-    );
+    try {
+      const result = await sendTestEmail(email);
 
-    logger.info('Test email sent successfully', { email });
-    return ApiResponse.success(res, { sentTo: email }, 'Test email sent successfully');
+      if (!result.success) {
+        logger.error('Failed to send test email', { 
+          email, 
+          error: result.error 
+        });
+        return ApiResponse.error(res, `Failed to send test email: ${result.error}`, 500);
+      }
+
+      logger.info('Test email sent successfully', { 
+        email, 
+        messageId: result.messageId 
+      });
+      
+      return ApiResponse.success(res, { 
+        sentTo: email, 
+        messageId: result.messageId 
+      }, 'Test email sent successfully');
+      
+    } catch (error) {
+      logger.error('Unexpected error sending test email', { 
+        email, 
+        error: error.message 
+      });
+      return ApiResponse.error(res, 'Internal server error while sending test email', 500);
+    }
   })
 );
 
 // Send certificate approval email
 router.post('/certificate-approval',
-  validateRequired(['studentEmail', 'studentName', 'studentId', 'courseName', 'companyName']),
+  validateRequired(['studentEmail', 'studentName', 'studentId', 'courseName']),
   validateEmailField('studentEmail'),
   asyncHandler(async (req, res) => {
     const { studentEmail, studentName, studentId, courseName, companyName } = req.body;
+
+    // Additional validation
+    if (!studentId || (typeof studentId !== 'string' && typeof studentId !== 'number')) {
+      return ApiResponse.error(res, 'Invalid student ID format', 400);
+    }
 
     logger.info('Sending certificate approval email', { 
       studentEmail, 
       studentName, 
       studentId, 
       courseName, 
-      companyName 
+      companyName: companyName || 'Nigha Tech Global'
     });
 
-    await sendCertificateApprovalEmail(studentEmail, studentName, studentId, courseName, companyName);
+    try {
+      const result = await sendCertificateApprovalEmail(
+        studentEmail, 
+        studentName, 
+        studentId, 
+        courseName, 
+        companyName || 'Nigha Tech Global'
+      );
 
-    logger.info('Certificate approval email sent successfully', { studentEmail, studentId });
-    return ApiResponse.success(res, { sentTo: studentEmail }, 'Certificate approval email sent successfully');
+      if (!result.success) {
+        logger.error('Failed to send certificate approval email', { 
+          studentEmail, 
+          studentId, 
+          error: result.error 
+        });
+        return ApiResponse.error(res, `Failed to send email: ${result.error}`, 500);
+      }
+
+      logger.info('Certificate approval email sent successfully', { 
+        studentEmail, 
+        studentId, 
+        messageId: result.messageId,
+        attempt: result.attempt 
+      });
+      
+      return ApiResponse.success(res, { 
+        sentTo: studentEmail, 
+        messageId: result.messageId,
+        attempt: result.attempt 
+      }, 'Certificate approval email sent successfully');
+      
+    } catch (error) {
+      logger.error('Unexpected error sending certificate approval email', { 
+        studentEmail, 
+        studentId, 
+        error: error.message 
+      });
+      return ApiResponse.error(res, 'Internal server error while sending email', 500);
+    }
   })
 );
 
 // Send certificate rejection email
 router.post('/certificate-rejection',
-  validateRequired(['studentEmail', 'studentName']),
+  validateRequired(['studentEmail', 'studentName', 'courseName']),
   validateEmailField('studentEmail'),
   asyncHandler(async (req, res) => {
-    const { studentEmail, studentName, reason } = req.body;
+    const { studentEmail, studentName, courseName, reason } = req.body;
 
     logger.info('Sending certificate rejection email', { 
       studentEmail, 
       studentName, 
+      courseName,
       reason: reason || 'No reason provided' 
     });
 
-    await sendCertificateRejectionEmail(studentEmail, studentName, reason);
+    try {
+      const result = await sendCertificateRejectionEmail(
+        studentEmail, 
+        studentName, 
+        courseName, 
+        reason
+      );
 
-    logger.info('Certificate rejection email sent successfully', { studentEmail });
-    return ApiResponse.success(res, { sentTo: studentEmail }, 'Certificate rejection email sent successfully');
+      if (!result.success) {
+        logger.error('Failed to send certificate rejection email', { 
+          studentEmail, 
+          error: result.error 
+        });
+        return ApiResponse.error(res, `Failed to send email: ${result.error}`, 500);
+      }
+
+      logger.info('Certificate rejection email sent successfully', { 
+        studentEmail, 
+        messageId: result.messageId,
+        attempt: result.attempt 
+      });
+      
+      return ApiResponse.success(res, { 
+        sentTo: studentEmail, 
+        messageId: result.messageId,
+        attempt: result.attempt 
+      }, 'Certificate rejection email sent successfully');
+      
+    } catch (error) {
+      logger.error('Unexpected error sending certificate rejection email', { 
+        studentEmail, 
+        error: error.message 
+      });
+      return ApiResponse.error(res, 'Internal server error while sending email', 500);
+    }
   })
 );
 

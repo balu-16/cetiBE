@@ -11,12 +11,13 @@
     "dev:debug": "nodemon --inspect index.js",
     "test:sms": "node test-sms.js",
     "test:email": "node -e \"import('./routes/email.js').then(m => console.log('Email routes loaded successfully'))\"",
+    "test:email:send": "node test-email-send.js",
     "lint": "echo 'Add ESLint configuration for code linting'",
     "format": "echo 'Add Prettier configuration for code formatting'",
     "logs": "tail -f logs/*.log",
     "clean:logs": "rm -rf logs/*.log",
     "health": "curl http://localhost:3001/health || echo 'Server not running'",
-    "env:check": "node -e \"console.log('Environment check:'); console.log('NODE_ENV:', process.env.NODE_ENV); console.log('PORT:', process.env.PORT); console.log('Email configured:', !!process.env.EMAIL_USER);\""
+    "env:check": "node -e \"require('dotenv').config(); console.log('Environment check:'); console.log('NODE_ENV:', process.env.NODE_ENV); console.log('PORT:', process.env.PORT); console.log('Email configured:', !!process.env.EMAIL_USER); console.log('EMAIL_USER:', process.env.EMAIL_USER);\""
   },
   "dependencies": {
     "@azure/msal-node": "^3.6.3",
