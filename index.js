@@ -8,31 +8,33 @@ import testRoutes from './routes/test.js';
 import supabase from './supabaseClient.js';
 import { WorkingOtpService } from './test-otp.js';
 import CertificateGenerator from './services/certificateGenerator.js';
-import { verifyTransporter } from './services/emailService.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize email service on startup
-(async () => {
-  try {
-    console.log('🔧 Initializing email service...');
-    const emailReady = await verifyTransporter();
-    if (emailReady) {
-      console.log('✅ Email service initialized successfully');
-    } else {
-      console.warn('⚠️ Email service initialization failed - emails may not work');
-    }
-  } catch (error) {
-    console.error('❌ Email service initialization error:', error.message);
-  }
-})();
-
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Certificate Hub Backend API',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      auth: '/v1/auth',
+      certificates: '/v1/certificates',
+      email: '/v1/email',
+      students: '/v1/students',
+      sms: '/v1/sms/send'
+    }
+  });
+});
 
 // Routes
 app.use('/v1/auth', authRoutes);
@@ -381,49 +383,31 @@ app.put('/v1/students/:studentId/eligibility', async (req, res) => {
 
 
 
-// Error handling middleware
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    details: err.message 
+  console.error('Global error handler:', err);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Endpoint not found',
-    path: req.originalUrl 
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Route ${req.originalUrl} not found`,
+    availableEndpoints: {
+      root: '/',
+      health: '/health',
+      auth: '/v1/auth',
+      certificates: '/v1/certificates',
+      email: '/v1/email',
+      students: '/v1/students',
+      sms: '/v1/sms/send'
+    }
   });
 });
 
-// Export the app for serverless deployment (Vercel)
+// Export the app for serverless deployment
 export default app;
-
-// Start server only in development/local environment
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Certificate Hub Backend Server running on port ${PORT}`);
-    console.log(`📍 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔐 Auth API: http://localhost:${PORT}/v1/auth`);
-    console.log(`📜 Students API: http://localhost:${PORT}/v1/students`);
-    console.log(`📱 SMS API: http://localhost:${PORT}/v1/sms/send`);
-    console.log(`🎓 Certificate APIs:`);
-    console.log(`   Generate: POST http://localhost:${PORT}/v1/certificates/generate/:studentId`);
-    console.log(`   Download: GET http://localhost:${PORT}/v1/certificates/download/:studentId`);
-    console.log(`   Status: GET http://localhost:${PORT}/v1/certificates/status/:studentId`);
-    console.log(`✅ Certificate Hub Backend ready!`);
-  });
-
-  // Graceful shutdown
-  process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down Certificate Hub Backend Server...');
-    process.exit(0);
-  });
-
-  process.on('SIGTERM', () => {
-    console.log('\n🛑 Shutting down Certificate Hub Backend Server...');
-    process.exit(0);
-  });
-}
