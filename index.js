@@ -86,20 +86,20 @@ app.use('/v1/test', asyncMiddleware(async (req, res) => {
 app.post('/v1/sms/send', asyncMiddleware(async (req, res) => {
   try {
     const { phoneNumber, message } = req.body;
-    
+
     if (!phoneNumber || !message) {
       return res.status(400).json({
         success: false,
         error: 'Phone number and message are required'
       });
     }
-    
+
     res.status(503).json({
       success: false,
       error: 'SMS service temporarily unavailable',
       message: 'Please try again later'
     });
-    
+
   } catch (error) {
     console.error('❌ SMS sending error:', error);
     res.status(500).json({
@@ -118,7 +118,7 @@ app.get('/v1/students', asyncMiddleware(async (req, res) => {
       error: 'Database service temporarily unavailable',
       message: 'Please try again later'
     });
-    
+
   } catch (error) {
     console.error('❌ Students fetch error:', error);
     res.status(500).json({
@@ -133,22 +133,22 @@ app.get('/v1/students', asyncMiddleware(async (req, res) => {
 app.post('/v1/certificates/generate/:studentId', asyncMiddleware(async (req, res) => {
   try {
     const { studentId } = req.params;
-    
+
     console.log(`🎓 Certificate generation request for student ID: ${studentId}`);
-    
+
     if (!studentId) {
       return res.status(400).json({
         success: false,
         error: 'Student ID is required'
       });
     }
-    
+
     res.status(503).json({
       success: false,
       error: 'Certificate generation service temporarily unavailable',
       message: 'Please try again later'
     });
-    
+
   } catch (error) {
     console.error('❌ Certificate generation error:', error);
     res.status(500).json({
@@ -163,22 +163,22 @@ app.post('/v1/certificates/generate/:studentId', asyncMiddleware(async (req, res
 app.get('/v1/certificates/download/:studentId', asyncMiddleware(async (req, res) => {
   try {
     const { studentId } = req.params;
-    
+
     console.log(`📥 Certificate download request for student ID: ${studentId}`);
-    
+
     if (!studentId) {
       return res.status(400).json({
         success: false,
         error: 'Student ID is required'
       });
     }
-    
+
     res.status(503).json({
       success: false,
       error: 'Certificate download service temporarily unavailable',
       message: 'Please try again later'
     });
-    
+
   } catch (error) {
     console.error('❌ Certificate download error:', error);
     res.status(500).json({
@@ -193,22 +193,22 @@ app.get('/v1/certificates/download/:studentId', asyncMiddleware(async (req, res)
 app.get('/v1/certificates/status/:studentId', asyncMiddleware(async (req, res) => {
   try {
     const { studentId } = req.params;
-    
+
     console.log(`📋 Certificate status request for student ID: ${studentId}`);
-    
+
     if (!studentId) {
       return res.status(400).json({
         success: false,
         error: 'Student ID is required'
       });
     }
-    
+
     res.status(503).json({
       success: false,
       error: 'Certificate status service temporarily unavailable',
       message: 'Please try again later'
     });
-    
+
   } catch (error) {
     console.error('❌ Certificate status error:', error);
     res.status(500).json({
@@ -224,29 +224,29 @@ app.put('/v1/students/:studentId/eligibility', asyncMiddleware(async (req, res) 
   try {
     const { studentId } = req.params;
     const { eligible } = req.body;
-    
+
     console.log(`🎯 Eligibility update request for student ID: ${studentId}, eligible: ${eligible}`);
-    
+
     if (!studentId) {
       return res.status(400).json({
         success: false,
         error: 'Student ID is required'
       });
     }
-    
+
     if (typeof eligible !== 'boolean') {
       return res.status(400).json({
         success: false,
         error: 'Eligible status must be a boolean value'
       });
     }
-    
+
     res.status(503).json({
       success: false,
       error: 'Student eligibility service temporarily unavailable',
       message: 'Please try again later'
     });
-    
+
   } catch (error) {
     console.error('❌ Eligibility update error:', error);
     res.status(500).json({
@@ -282,6 +282,18 @@ app.use('*', (req, res) => {
     }
   });
 });
+
+// Conditional server start for local development
+// Check if this file is being run directly (not imported)
+const isMainModule = process.argv[1] && process.argv[1].endsWith('index.js');
+if (isMainModule && process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📋 Health check: http://localhost:${PORT}/health`);
+    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`⚡ Ready to accept requests!`);
+  });
+}
 
 // Export the app for serverless deployment
 export default app;
