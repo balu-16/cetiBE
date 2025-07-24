@@ -2,6 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+// Import route modules
+import authRoutes from './routes/auth.js';
+import certificatesRoutes from './routes/certificates.js';
+import emailRoutes from './routes/email.js';
+import testRoutes from './routes/test.js';
+import studentsRoutes from './routes/students.js';
+import smsRoutes from './routes/sms.js';
+
 // Load environment variables first
 dotenv.config();
 
@@ -49,213 +57,13 @@ function asyncMiddleware(fn) {
   };
 }
 
-// Simple route handlers without lazy loading to avoid import issues
-app.use('/v1/auth', asyncMiddleware(async (req, res) => {
-  res.status(503).json({
-    success: false,
-    error: 'Auth service temporarily unavailable',
-    message: 'Please try again later'
-  });
-}));
-
-app.use('/v1/certificates', asyncMiddleware(async (req, res) => {
-  res.status(503).json({
-    success: false,
-    error: 'Certificate service temporarily unavailable',
-    message: 'Please try again later'
-  });
-}));
-
-app.use('/v1/email', asyncMiddleware(async (req, res) => {
-  res.status(503).json({
-    success: false,
-    error: 'Email service temporarily unavailable',
-    message: 'Please try again later'
-  });
-}));
-
-app.use('/v1/test', asyncMiddleware(async (req, res) => {
-  res.status(503).json({
-    success: false,
-    error: 'Test service temporarily unavailable',
-    message: 'Please try again later'
-  });
-}));
-
-// SMS endpoint
-app.post('/v1/sms/send', asyncMiddleware(async (req, res) => {
-  try {
-    const { phoneNumber, message } = req.body;
-
-    if (!phoneNumber || !message) {
-      return res.status(400).json({
-        success: false,
-        error: 'Phone number and message are required'
-      });
-    }
-
-    res.status(503).json({
-      success: false,
-      error: 'SMS service temporarily unavailable',
-      message: 'Please try again later'
-    });
-
-  } catch (error) {
-    console.error('❌ SMS sending error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to send SMS',
-      details: error.message
-    });
-  }
-}));
-
-// Students endpoints
-app.get('/v1/students', asyncMiddleware(async (req, res) => {
-  try {
-    res.status(503).json({
-      success: false,
-      error: 'Database service temporarily unavailable',
-      message: 'Please try again later'
-    });
-
-  } catch (error) {
-    console.error('❌ Students fetch error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch students',
-      details: error.message
-    });
-  }
-}));
-
-// Certificate generation endpoint
-app.post('/v1/certificates/generate/:studentId', asyncMiddleware(async (req, res) => {
-  try {
-    const { studentId } = req.params;
-
-    console.log(`🎓 Certificate generation request for student ID: ${studentId}`);
-
-    if (!studentId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Student ID is required'
-      });
-    }
-
-    res.status(503).json({
-      success: false,
-      error: 'Certificate generation service temporarily unavailable',
-      message: 'Please try again later'
-    });
-
-  } catch (error) {
-    console.error('❌ Certificate generation error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate certificate',
-      details: error.message
-    });
-  }
-}));
-
-// Certificate download endpoint
-app.get('/v1/certificates/download/:studentId', asyncMiddleware(async (req, res) => {
-  try {
-    const { studentId } = req.params;
-
-    console.log(`📥 Certificate download request for student ID: ${studentId}`);
-
-    if (!studentId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Student ID is required'
-      });
-    }
-
-    res.status(503).json({
-      success: false,
-      error: 'Certificate download service temporarily unavailable',
-      message: 'Please try again later'
-    });
-
-  } catch (error) {
-    console.error('❌ Certificate download error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to download certificate',
-      details: error.message
-    });
-  }
-}));
-
-// Certificate status endpoint
-app.get('/v1/certificates/status/:studentId', asyncMiddleware(async (req, res) => {
-  try {
-    const { studentId } = req.params;
-
-    console.log(`📋 Certificate status request for student ID: ${studentId}`);
-
-    if (!studentId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Student ID is required'
-      });
-    }
-
-    res.status(503).json({
-      success: false,
-      error: 'Certificate status service temporarily unavailable',
-      message: 'Please try again later'
-    });
-
-  } catch (error) {
-    console.error('❌ Certificate status error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get certificate status',
-      details: error.message
-    });
-  }
-}));
-
-// Update student eligibility status
-app.put('/v1/students/:studentId/eligibility', asyncMiddleware(async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    const { eligible } = req.body;
-
-    console.log(`🎯 Eligibility update request for student ID: ${studentId}, eligible: ${eligible}`);
-
-    if (!studentId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Student ID is required'
-      });
-    }
-
-    if (typeof eligible !== 'boolean') {
-      return res.status(400).json({
-        success: false,
-        error: 'Eligible status must be a boolean value'
-      });
-    }
-
-    res.status(503).json({
-      success: false,
-      error: 'Student eligibility service temporarily unavailable',
-      message: 'Please try again later'
-    });
-
-  } catch (error) {
-    console.error('❌ Eligibility update error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update student eligibility',
-      details: error.message
-    });
-  }
-}));
+// Mount route modules
+app.use('/v1/auth', authRoutes);
+app.use('/v1/certificates', certificatesRoutes);
+app.use('/v1/email', emailRoutes);
+app.use('/v1/test', testRoutes);
+app.use('/v1/students', studentsRoutes);
+app.use('/v1/sms', smsRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
