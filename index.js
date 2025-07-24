@@ -4,9 +4,7 @@ import dotenv from 'dotenv';
 
 // Import route modules
 import authRoutes from './routes/auth.js';
-import certificatesRoutes from './routes/certificates.js';
 import emailRoutes from './routes/email.js';
-import testRoutes from './routes/test.js';
 import studentsRoutes from './routes/students.js';
 import smsRoutes from './routes/sms.js';
 
@@ -31,7 +29,6 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       auth: '/v1/auth',
-      certificates: '/v1/certificates',
       email: '/v1/email',
       students: '/v1/students',
       sms: '/v1/sms/send'
@@ -59,9 +56,7 @@ function asyncMiddleware(fn) {
 
 // Mount route modules
 app.use('/v1/auth', authRoutes);
-app.use('/v1/certificates', certificatesRoutes);
 app.use('/v1/email', emailRoutes);
-app.use('/v1/test', testRoutes);
 app.use('/v1/students', studentsRoutes);
 app.use('/v1/sms', smsRoutes);
 
@@ -83,7 +78,6 @@ app.use('*', (req, res) => {
       root: '/',
       health: '/health',
       auth: '/v1/auth',
-      certificates: '/v1/certificates',
       email: '/v1/email',
       students: '/v1/students',
       sms: '/v1/sms/send'
